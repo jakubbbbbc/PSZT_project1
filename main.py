@@ -4,7 +4,7 @@
 """
 Fundamentals of Artificial Intelligence
 Project 1
-Jakub Ciemięga, Kszysztof Piątek 2021
+Jakub Ciemięga, Krzysztof Piątek 2021
 Warsaw University of Technology
 """
 

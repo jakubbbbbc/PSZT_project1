@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """ evolution algorithm
-Authors: Jakub Ciemięga, Kszysztof Piątek
+Authors: Jakub Ciemięga, Krzysztof Piątek
 """
 
 import numpy as np
