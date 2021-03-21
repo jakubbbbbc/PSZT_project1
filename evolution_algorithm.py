@@ -61,3 +61,30 @@ def objective_function(input_image: np.ndarray, individuals: list) -> np.ndarray
         scores[i] = (abs_error_b + abs_error_g + abs_error_r) / img.shape[0] ** 2
 
     return scores
+
+
+def selection_tournament(individuals: list, scores: np.ndarray) -> list:
+    """
+        creates a new population using selection tournament
+
+        :param scores: values of the objective function for individuals in current population
+        :type scores: np.ndarray of floats
+
+        :param individuals: list of individuals in current population
+        :type individuals: list of np.ndarray
+
+        :return new_individuals: population created in tournament
+        :rtype new_individuals: list of np.ndarrays
+        """
+    pop_size = len(individuals)
+    new_individuals = []
+
+    for i in range(pop_size):
+        first = np.random.randint(0, pop_size)
+        second = np.random.randint(0, pop_size)
+        if scores[first] > scores[second]:
+            new_individuals.append(individuals[first])
+        else:
+            new_individuals.append(individuals[second])
+
+    return new_individuals

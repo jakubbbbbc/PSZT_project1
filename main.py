@@ -11,7 +11,7 @@ Warsaw University of Technology
 import numpy as np
 import cv2
 from individual import create_image
-from evolution_algorithm import initialize_population, objective_function
+from evolution_algorithm import initialize_population, objective_function, selection_tournament
 
 img_size = 400
 pop_size = 5
@@ -36,10 +36,14 @@ if __name__ == "__main__":
     best_score = np.min(scores)
 
     cur_gen = 0
+
+    print('STARTING:')
+    for i in range(len(scores)):
+        print(scores[i])
+
     while cur_gen < num_generations:
 
-        # TODO implement selection_tournament() in evolution_algorithm.py
-        # pop_selection = selection_tournament(pop, scores)
+        pop_selection = selection_tournament(pop, scores)
         # TODO implement mutation() in evolution_algorithm.py
         # pop_mutation = mutation(pop_selection)
 
@@ -55,5 +59,10 @@ if __name__ == "__main__":
         if cur_gen % 100 == 0:
             cv2.imshow('Generation ' + str(cur_gen) + ', score: ' + str(best_score), create_image(img_size, best_ind))
             cv2.waitKey()
+            scores_selection = objective_function(input_img, pop_selection)
+            print('SELECTION:')
+            for i in range(len(scores_selection)):
+                print(scores_selection[i])
+
 
         cur_gen += 1
