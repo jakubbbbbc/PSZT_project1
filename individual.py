@@ -17,7 +17,7 @@ def generate_individual(img_size: int) -> np.ndarray:
 
     :return: individual
     :rtype: np.ndarray with shape (k, 8) where k is number of rectangles of a given individual. Each row contains
-    information about one rectangle: top-left corner (x1,y1), bottom-right corner (x2,y2) and image canals (BGRA) which
+    information about one rectangle: top-left corner (x1,y1), bottom-right corner (x2,y2) and image channels (BGRA) which
     are Integer values in range 0-255
     """
 
@@ -34,7 +34,7 @@ def generate_individual(img_size: int) -> np.ndarray:
     for i in range(k):
         individual[i, 2] = np.random.randint(individual[i, 0] + 1, img_size)
         individual[i, 3] = np.random.randint(individual[i, 1] + 1, img_size)
-    # BGRA canals
+    # BGRA channels
     individual[:, 4:] = np.random.randint(0, 256, (k, 4))
 
     return individual

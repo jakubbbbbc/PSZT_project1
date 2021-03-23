@@ -11,11 +11,12 @@ Warsaw University of Technology
 import numpy as np
 import cv2
 from individual import create_image
-from evolution_algorithm import initialize_population, objective_function, selection_tournament, succession_elite
+from evolution_algorithm import initialize_population, objective_function, selection_tournament, succession_elite, \
+    mutation
 
 img_size = 400
 pop_size = 20
-num_generations = 300
+num_generations = 301
 
 # for elite succession
 k = 1
@@ -48,17 +49,16 @@ if __name__ == "__main__":
 
         pop_selection = selection_tournament(pop, scores)
 
-        # TODO implement mutation() in evolution_algorithm.py
-        # pop_mutation = mutation(pop_selection)
+        pop_mutation = mutation(pop_selection, img_size)
 
-        # new_scores = objective_function(input_img, pop_mutation)
-        new_scores = objective_function(input_img, pop_selection)
+        new_scores = objective_function(input_img, pop_mutation)
+        # new_scores = objective_function(input_img, pop_selection)
 
         # print('old')
         # print(pop)
         # print(scores)
-        # pop, scores = succession_elite(pop, scores, pop_mutation, new_scores, k)
-        pop, scores = succession_elite(pop, scores, pop_selection, new_scores, k)
+        pop, scores = succession_elite(pop, scores, pop_mutation, new_scores, k)
+        # pop, scores = succession_elite(pop, scores, pop_selection, new_scores, k)
 
         # print('new')
         # print(pop_selection)
@@ -67,9 +67,9 @@ if __name__ == "__main__":
         # print(pop)
         # print(scores)
 
-        # if np.min(scores) < best_score:
-        #     best_score = np.min(scores)
-        #     best_ind = pop[np.argmin(scores)]
+        if np.min(scores) < best_score:
+            best_score = np.min(scores)
+            best_ind = pop[np.argmin(scores)]
 
         if cur_gen % 100 == 0:
             cv2.imshow('Generation ' + str(cur_gen) + ', score: ' + str(best_score), create_image(img_size, best_ind))
@@ -77,6 +77,5 @@ if __name__ == "__main__":
             # scores_selection = objective_function(input_img, pop_selection)
             # print('SELECTION:')
             # print(scores_selection)
-
 
         cur_gen += 1
