@@ -22,7 +22,7 @@ def generate_individual(img_size: int) -> np.ndarray:
     """
 
     # draw number of rectangles k
-    k = np.random.randint(5, 11)
+    k = np.random.randint(1, 11)  # exclusive
     # print(k)
     # create individual consisting of k rectangles
     individual = np.zeros((k, 8), int)
