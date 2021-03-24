@@ -77,11 +77,14 @@ def selection_tournament(individuals: list, scores: np.ndarray) -> list:
         :rtype new_individuals: list of np.ndarrays
         """
     pop_size = len(individuals)
+    individuals = individuals.copy()
     new_individuals = []
 
     for i in range(pop_size):
         first = np.random.randint(0, pop_size)
-        second = np.random.randint(0, pop_size)
+        second = first
+        while second == first:
+            second = np.random.randint(0, pop_size)
         # pick individual with lower value
         if scores[first] < scores[second]:
             new_individuals.append(individuals[first])
@@ -116,24 +119,64 @@ def succession_elite(old_pop: list, old_scores: np.ndarray, new_pop: list, new_s
                                                                combined population
     :rtype: (list, np.ndarray)
     """
+
     combined_pop = old_pop.copy()
     combined_scores = old_scores.copy()
-    for i in range(k):
-        # delete worst element from the population
-        if i != 0:
-            worst_pos = np.argmax(combined_scores[:-i])  # [:-i] not to delete the elements already added from new_pop
-        else:
-            worst_pos = np.argmax(combined_scores)  # if else statement because indexing array[:-0] not possible
-        combined_pop.pop(worst_pos)
-        combined_scores = np.delete(combined_scores, worst_pos)
 
-        # add best element from new population
-        best_pos = np.argmin(new_scores)
-        combined_pop.append(new_pop[best_pos])
-        combined_scores = np.append(combined_scores, new_scores[best_pos])
-        # delete best element from new population so it's not added more than once
-        new_pop.pop(best_pos)
-        new_scores = np.delete(new_scores, best_pos)
+    worst_positions = np.argpartition(combined_scores, -k)[-k:]
+    best_positions = np.argpartition(new_scores, k)[:k]
+
+    combined_scores[worst_positions] = new_scores[best_positions]
+    for i in range(k):
+        combined_pop[worst_positions[i]] = new_pop[best_positions[i]]
+
+    return combined_pop, combined_scores
+
+
+def succession_steady_state(old_pop: list, old_scores: np.ndarray, new_pop: list, new_scores: np.ndarray) -> \
+                            (list, np.ndarray):
+    """ Perform steady state succession
+    Places 1 best individual from new_pop in old_pop. Individual from old_pop to be replaced is found in a reverse
+    tournament.
+
+    :param old_pop: current population
+    :type old_pop: list of pop_size individuals
+
+    :param old_scores: values of the objective function for individuals in current population
+    :type old_scores: np.ndarray of floats
+
+    :param new_pop: new population
+    :type new_pop: list of pop_size individuals
+
+    :param new_scores: values of the objective function for individuals in new population
+    :type new_scores: np.ndarray of floats
+
+    :return: (combined_pop, combined_scores): combined_pop: generated successive population
+                                              combined_scores: values of the objective function for individuals in
+                                                               combined population
+    :rtype: (list, np.ndarray)
+    """
+    combined_pop = old_pop.copy()
+    combined_scores = old_scores.copy()
+    pop_size = len(combined_pop)
+
+    # find index in combined population to be replaced in reverse tournament
+    first = np.random.randint(0, pop_size)
+    second = first
+    while second == first:
+        second = np.random.randint(0, pop_size)
+    # pick individual with higher (worse) value
+    if combined_scores[first] > combined_scores[second]:
+        replaced_pos = first
+    else:
+        replaced_pos = second
+
+    # find best
+    best_pos = np.argmin(new_scores)
+
+    # replace
+    combined_pop[replaced_pos] = new_pop[best_pos]
+    combined_scores[replaced_pos] = new_scores[best_pos]
 
     return combined_pop, combined_scores
 
@@ -186,7 +229,7 @@ def mutation(pop: list, img_size: int) -> list:
 
         # decide if to add or remove a rectangle remove-10%, add-40%
         add_remove = np.random.randint(0, 10)
-        if 0 == add_remove:
+        if 0 == add_remove and ind.shape[0] > 2:
             # remove rectangle
             ind = np.delete(ind, np.random.randint(0, ind.shape[0]), axis=0)
         elif 4 >= add_remove:
