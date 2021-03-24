@@ -55,18 +55,14 @@ def create_image(img_size: int, individual: np.ndarray) -> np.ndarray:
     :rtype img: np.ndarray with shape (img_size, img_size)
     """
 
-    B = np.zeros((img_size, img_size), 'uint8')
-    G = np.zeros((img_size, img_size), 'uint8')
-    R = np.zeros((img_size, img_size), 'uint8')
-    # print(individual.shape[0])
+    img = np.zeros((img_size, img_size, 3), 'uint8')
 
     for i in range(individual.shape[0]):
-        # print(individual)
-        x1, y1, x2, y2, b, g, r, alpha = individual[i]
+        x1, y1, x2, y2 = individual[i, :4]
         # alpha should be in range 0-1
-        alpha /= 255.
-        B[y1:y2 + 1, x1:x2 + 1] = (1 - alpha) * B[y1:y2 + 1, x1:x2 + 1] + alpha * b
-        G[y1:y2 + 1, x1:x2 + 1] = (1 - alpha) * G[y1:y2 + 1, x1:x2 + 1] + alpha * g
-        R[y1:y2 + 1, x1:x2 + 1] = (1 - alpha) * R[y1:y2 + 1, x1:x2 + 1] + alpha * r
+        alpha = individual[i, 7] / 255.
 
-    return cv2.merge((B, G, R))
+        img[y1:y2 + 1, x1:x2 + 1] = (1 - alpha) * img[y1:y2 + 1, x1:x2 + 1] + alpha * individual[i, 4:7]
+
+    # return cv2.merge((B, G, R))
+    return img

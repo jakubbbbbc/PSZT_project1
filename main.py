@@ -17,7 +17,7 @@ from evolution_algorithm import initialize_population, objective_function, selec
 
 img_size = 100
 pop_size = 20
-num_generations = 30001
+num_generations = 15000
 
 # for elite succession
 k = 1
@@ -27,9 +27,10 @@ if __name__ == "__main__":
     # np.random.seed(300418)
 
     # load input image
-    input_img = cv2.imread("image/krzyk.jpg")
+    input_img = cv2.imread("image/sunset.jpg")
     input_img = input_img[::7, ::7]
-    y, x = 80, 40
+    # y, x = 80, 40
+    y, x = 0, 0
     input_img = input_img[y:y+img_size, x:x+img_size]
     cv2.imshow("Input image", input_img)
     cv2.waitKey()
