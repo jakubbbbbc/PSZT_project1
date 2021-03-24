@@ -6,6 +6,7 @@ Authors: Jakub Ciemięga, Krzysztof Piątek
 """
 
 import numpy as np
+import copy
 from individual import generate_individual, create_image
 
 
@@ -77,7 +78,7 @@ def selection_tournament(individuals: list, scores: np.ndarray) -> list:
         :rtype new_individuals: list of np.ndarrays
         """
     pop_size = len(individuals)
-    individuals = individuals.copy()
+    individuals = copy.deepcopy(individuals)
     new_individuals = []
 
     for i in range(pop_size):
@@ -120,7 +121,7 @@ def succession_elite(old_pop: list, old_scores: np.ndarray, new_pop: list, new_s
     :rtype: (list, np.ndarray)
     """
 
-    combined_pop = old_pop.copy()
+    combined_pop = copy.deepcopy(old_pop)
     combined_scores = old_scores.copy()
 
     worst_positions = np.argpartition(combined_scores, -k)[-k:]
@@ -156,7 +157,7 @@ def succession_steady_state(old_pop: list, old_scores: np.ndarray, new_pop: list
                                                                combined population
     :rtype: (list, np.ndarray)
     """
-    combined_pop = old_pop.copy()
+    combined_pop = copy.deepcopy(old_pop)
     combined_scores = old_scores.copy()
     pop_size = len(combined_pop)
 
@@ -197,55 +198,63 @@ def mutation(pop: list, img_size: int) -> list:
     :return pop_mutation: mutated population
     :rtype pop_mutation: list of pop_size individuals
     """
-    pop_mutation = pop.copy()
+    pop_mutation = copy.deepcopy(pop)
     pop_size = len(pop_mutation)
 
     # perform mutation for each individual
     for i in range(pop_size):
-        ind = pop_mutation[i]
+        ind = pop_mutation[i].copy()
 
-        # mutate one trait of one rectangle
-        rect_idx = np.random.randint(0, ind.shape[0])
-        trait_idx = np.random.randint(0, 6)
-        if 0 == trait_idx:
-            # x1, y1
-            ind[rect_idx, :2] = np.random.randint(0, img_size - 1, 2)
-        elif 1 == trait_idx:
-            # x2, y2
-            ind[rect_idx, 2] = np.random.randint(ind[rect_idx, 0] + 1, img_size)
-            ind[rect_idx, 3] = np.random.randint(ind[rect_idx, 1] + 1, img_size)
-        elif 2 == trait_idx:
-            # B channel
-            ind[rect_idx, 4] = np.random.randint(0, 256)
-        elif 3 == trait_idx:
-            # G channel
-            ind[rect_idx, 5] = np.random.randint(0, 256)
-        elif 4 == trait_idx:
-            # R channel
-            ind[rect_idx, 6] = np.random.randint(0, 256)
-        elif 5 == trait_idx:
-            # A channel
-            ind[rect_idx, 7] = np.random.randint(0, 256)
+        edit_or_add = np.random.randint(0,2)
+        if edit_or_add == 0:
 
-        # decide if to add or remove a rectangle remove-10%, add-40%
-        add_remove = np.random.randint(0, 10)
-        if 0 == add_remove and ind.shape[0] > 2:
-            # remove rectangle
-            ind = np.delete(ind, np.random.randint(0, ind.shape[0]), axis=0)
-        elif 4 >= add_remove:
-            # add rectangle
-            new_rect = np.zeros((1, 8), int)
-            # fill rectangle
-            # x1, y1
-            new_rect[0, :2] = np.random.randint(0, img_size - 1, 2)
-            # x2, y2
-            new_rect[0, 2] = np.random.randint(new_rect[0, 0] + 1, img_size)
-            new_rect[0, 3] = np.random.randint(new_rect[0, 1] + 1, img_size)
-            # BGRA channels
-            new_rect[0, 4:] = np.random.randint(0, 256, 4)
-            # add ready rectangle to individual
-            ind = np.r_[ind, new_rect]
+            change_num = np.random.randint(0, ind.shape[0]+1)
+            # change_num = np.random.randint(1, 2)
 
-        pop_mutation[i] = ind
+            for temp in range(change_num):
+                # mutate one trait of one rectangle
+                rect_idx = np.random.randint(0, ind.shape[0])
+                trait_idx = np.random.randint(0, 6)
+                if 0 == trait_idx:
+                    # x1, y1
+                    ind[rect_idx, :2] = np.random.randint(0, img_size - 1, 2)
+                elif 1 == trait_idx:
+                    # x2, y2
+                    ind[rect_idx, 2] = np.random.randint(ind[rect_idx, 0] + 1, img_size)
+                    ind[rect_idx, 3] = np.random.randint(ind[rect_idx, 1] + 1, img_size)
+                elif 2 == trait_idx:
+                    # B channel
+                    ind[rect_idx, 4] = np.maximum(0, np.minimum(255, ind[rect_idx, 4] + np.random.normal(0, 100)))
+                elif 3 == trait_idx:
+                    # G channel
+                    ind[rect_idx, 5] = np.maximum(0, np.minimum(255, ind[rect_idx, 5] + np.random.normal(0, 100)))
+                elif 4 == trait_idx:
+                    # R channel
+                    ind[rect_idx, 6] = np.maximum(0, np.minimum(255, ind[rect_idx, 6] + np.random.normal(0, 100)))
+                elif 5 == trait_idx:
+                    # A channel
+                    ind[rect_idx, 7] = np.maximum(0, np.minimum(255, ind[rect_idx, 7] + np.random.normal(0, 100)))
+
+        else:
+            # decide if to add or remove a rectangle remove-10%, add-40%
+            add_remove = np.random.randint(0, 10)
+            if 4 >= add_remove and ind.shape[0] > 2:
+                # remove rectangle
+                ind = np.delete(ind, np.random.randint(0, ind.shape[0]), axis=0)
+            elif 9 >= add_remove and ind.shape[0] < 50:
+                # add rectangle
+                new_rect = np.zeros((1, 8), int)
+                # fill rectangle
+                # x1, y1
+                new_rect[0, :2] = np.random.randint(0, img_size - 1, 2)
+                # x2, y2
+                new_rect[0, 2] = np.random.randint(new_rect[0, 0] + 1, img_size)
+                new_rect[0, 3] = np.random.randint(new_rect[0, 1] + 1, img_size)
+                # BGRA channels
+                new_rect[0, 4:] = np.random.randint(0, 256, 4)
+                # add ready rectangle to individual
+                ind = np.r_[ind, new_rect]
+
+        pop_mutation[i] = ind.copy()
 
     return pop_mutation
