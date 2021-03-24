@@ -20,7 +20,7 @@ pop_size = 20
 num_generations = 15000
 
 # for elite succession
-k = 1
+k = 5
 
 if __name__ == "__main__":
     # for tests use random seed: 300418
@@ -108,7 +108,7 @@ if __name__ == "__main__":
             plt.plot(best_scores_gen[100:], best_scores[100:])
             plt.show()
             cv2.imwrite(
-                'results/' + '_gen_' + str(best_scores_gen[-1]) + "_score_" + str(best_scores[-1]) + ".png",
+                'results/' + 'gen_' + str(best_scores_gen[-1]) + "_score_" + str(best_scores[-1]) + ".png",
                 create_image(img_size, best_ind))
             # cv2.imshow('Generation ' + str(cur_gen) + ', score: ' + str(best_scores[-1]),
             #            create_image(img_size, best_ind))
