@@ -20,17 +20,17 @@ pop_size = 20
 num_generations = 30000
 
 # for elite succession
-k = 1
+k = 5
 
 if __name__ == "__main__":
     # for tests use random seed: 300418
     # np.random.seed(300418)
 
     # load input image
-    input_img = cv2.imread("image/rubens.jpg")
-    input_img = input_img[::5, ::5]
+    input_img = cv2.imread("image/sunset.jpg")
+    input_img = input_img[::7, ::7]
     # y, x = 80, 40
-    y, x = 30, 0
+    y, x = 0, 0
     input_img = input_img[y:y+img_size, x:x+img_size]
     cv2.imshow("Input image", input_img)
     cv2.waitKey()
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         # pop, scores = pop_mutation, new_scores
 
         if np.min(scores) < best_scores[-1]:
-            best_scores.append(np.min(scores))
+            best_scores.append(round(np.min(scores), 4))
             best_scores_gen.append(cur_gen)
             best_ind = pop[np.argmin(scores)].copy()
             print('gen:', cur_gen, 'best score:', best_scores[-1])
