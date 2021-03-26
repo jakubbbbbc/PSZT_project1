@@ -17,20 +17,20 @@ from evolution_algorithm import initialize_population, objective_function, selec
 
 img_size = 100
 pop_size = 20
-num_generations = 15000
+num_generations = 30000
 
 # for elite succession
-k = 5
+k = 1
 
 if __name__ == "__main__":
     # for tests use random seed: 300418
     # np.random.seed(300418)
 
     # load input image
-    input_img = cv2.imread("image/sunset.jpg")
-    input_img = input_img[::7, ::7]
+    input_img = cv2.imread("image/rubens.jpg")
+    input_img = input_img[::5, ::5]
     # y, x = 80, 40
-    y, x = 0, 0
+    y, x = 30, 0
     input_img = input_img[y:y+img_size, x:x+img_size]
     cv2.imshow("Input image", input_img)
     cv2.waitKey()
@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
         cur_gen += 1
 
-    print(scores)
+    print(np.sort(scores))
     print(np.std(scores))
     print('final score:', best_scores[-1])
     cv2.imwrite('results/' + 'final_gen_' + str(best_scores_gen[-1]) + "_score_" + str(best_scores[-1]) + ".png",
