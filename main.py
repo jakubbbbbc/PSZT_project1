@@ -15,22 +15,27 @@ from individual import create_image
 from evolution_algorithm import initialize_population, objective_function, selection_tournament, succession_elite, \
     mutation, succession_steady_state
 
-img_size = 100
+image_path = "image/krzyk2.jpg"
+
+img_size = 50
 pop_size = 20
 num_generations = 30000
 
+# for mutation
+max_rectangles = 10000
+
 # for elite succession
-k = 5
+num_replaced = 5
 
 if __name__ == "__main__":
-    # for tests use random seed: 300418
+    # for tests use random seed: 300418 (matr. number)
     # np.random.seed(300418)
 
     # load input image
-    input_img = cv2.imread("image/sunset.jpg")
-    input_img = input_img[::7, ::7]
-    # y, x = 80, 40
-    y, x = 0, 0
+    input_img = cv2.imread(image_path)
+    input_img = input_img[::14, ::14]
+    y, x = 40, 20
+    # y, x = 0, 0
     input_img = input_img[y:y+img_size, x:x+img_size]
     cv2.imshow("Input image", input_img)
     cv2.waitKey()
@@ -62,7 +67,7 @@ if __name__ == "__main__":
         # mutation
         # print('before:')
         # print(pop_selection)
-        pop_mutation = mutation(pop_selection, img_size)
+        pop_mutation = mutation(pop_selection, img_size, max_rectangles)
         # pop_mutation = mutation(pop, img_size)
         # print('after:')
         # print(pop_selection)
@@ -77,7 +82,7 @@ if __name__ == "__main__":
         # print(new_scores)
 
         # succession
-        pop, scores = succession_elite(pop, scores, pop_mutation, new_scores, k)
+        pop, scores = succession_elite(pop, scores, pop_mutation, new_scores, num_replaced)
         # pop, scores = succession_steady_state(pop, scores, pop_mutation, new_scores)
         # pop, scores = succession_elite(pop, scores, pop_selection, new_scores, k)
 
@@ -98,7 +103,7 @@ if __name__ == "__main__":
             #            create_image(img_size, best_ind))
             # cv2.waitKey()
 
-        if cur_gen % 500 == 0:
+        if cur_gen % 1000 == 0:
             print('cur_gen:', cur_gen)
 
             print(np.sort(scores))
