@@ -6,7 +6,6 @@ Authors: Jakub Ciemięga, Krzysztof Piątek
 """
 
 import numpy as np
-import cv2
 
 
 def generate_individual(img_size: int) -> np.ndarray:
@@ -23,7 +22,6 @@ def generate_individual(img_size: int) -> np.ndarray:
 
     # draw number of rectangles k
     k = np.random.randint(1, 3)  # exclusive
-    # print(k)
     # create individual consisting of k rectangles
     individual = np.zeros((k, 8), int)
 
@@ -64,5 +62,4 @@ def create_image(img_size: int, individual: np.ndarray) -> np.ndarray:
 
         img[y1:y2 + 1, x1:x2 + 1] = (1 - alpha) * img[y1:y2 + 1, x1:x2 + 1] + alpha * individual[i, 4:7]
 
-    # return cv2.merge((B, G, R))
     return img

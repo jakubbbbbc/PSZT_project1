@@ -96,9 +96,8 @@ def selection_tournament(individuals: list, scores: np.ndarray) -> list:
 
 
 def succession_elite(old_pop: list, old_scores: np.ndarray, new_pop: list, new_scores: np.ndarray,
-                     num_replaced: int = 1) -> \
-        (list, np.ndarray):
-    """ Perform elite succession, replaces num_replaced worst individuals from old_pop with num_replaced best
+                     num_kept: int = 1) -> (list, np.ndarray):
+    """ Perform elite succession, replaces num_kept worst individuals from old_pop with num_kept best
         individuals from new_pop
 
     :param old_pop: current population
@@ -113,25 +112,25 @@ def succession_elite(old_pop: list, old_scores: np.ndarray, new_pop: list, new_s
     :param new_scores: values of the objective function for individuals in new population
     :type new_scores: np.ndarray of floats
 
-    :param num_replaced: decides how many worst individuals from old_pop are to be replaced by best individuals from new_pop
-    :type num_replaced: int
+    :param num_kept: how many best individuals from old_pop are not to be replaced by best individuals from new_pop
+    :type num_kept: int
 
-    :return: (combined_pop, combined_scores): combined_pop: population consisting of k best individuals from new_pop and
-                                                            (pop_size-k) best individuals from old_pop
+    :return: (combined_pop, combined_scores): combined_pop: population comprising num_kept best individuals from old_pop
+                                                            and (pop_size-num_kept) best individuals from new_pop
                                               combined_scores: values of the objective function for individuals in
                                                                combined population
     :rtype: (list, np.ndarray)
     """
 
-    combined_pop = copy.deepcopy(old_pop)
-    combined_scores = old_scores.copy()
+    combined_pop = copy.deepcopy(new_pop)
+    combined_scores = new_scores.copy()
 
-    worst_positions = np.argpartition(combined_scores, -num_replaced)[-num_replaced:]
-    best_positions = np.argpartition(new_scores, num_replaced)[:num_replaced]
+    worst_positions = np.argpartition(combined_scores, -num_kept)[-num_kept:]
+    best_positions = np.argpartition(old_scores, num_kept)[:num_kept]
 
-    combined_scores[worst_positions] = new_scores[best_positions]
-    for i in range(num_replaced):
-        combined_pop[worst_positions[i]] = new_pop[best_positions[i]]
+    combined_scores[worst_positions] = old_scores[best_positions]
+    for i in range(num_kept):
+        combined_pop[worst_positions[i]] = old_pop[best_positions[i]]
 
     return combined_pop, combined_scores
 
@@ -184,7 +183,7 @@ def succession_steady_state(old_pop: list, old_scores: np.ndarray, new_pop: list
     return combined_pop, combined_scores
 
 
-def mutation(pop: list, img_size: int, max_rectangles: int) -> list:
+def mutation(pop: list, img_size: int, max_rectangles: int, prob_edit: float, prob_add: float, mut_std: float) -> list:
     """ Perform mutation on a given population
 
     For each individual of k rectangles at first decide if to change existing rectangles or change their number.
@@ -201,6 +200,17 @@ def mutation(pop: list, img_size: int, max_rectangles: int) -> list:
     :param max_rectangles: maximum number of rectangles an individual can comprise
     :type max_rectangles: int
 
+    :param prob_edit: probability that individual's rectangles are edited and nothing is added/removed. Probability that
+                      a rectangle is removed or added = 1-prob_edit
+    :type prob_edit: float
+
+    :param prob_add: probability a rectangle is added and not removed. final_prob_add = (1-prob_edit)*prob_add
+    :type prob_add: float
+
+    :param mut_std: defines mutation std in relation to appropriate maximum value so: coordinates_std=mut_std*img_size,
+                    colors_std = std*255
+    :type mut_std: float
+
     :return pop_mutation: mutated population
     :rtype pop_mutation: list of pop_size individuals
     """
@@ -214,16 +224,15 @@ def mutation(pop: list, img_size: int, max_rectangles: int) -> list:
         # flag to mark if a rectangle was added or removed
         already_changed = False
 
-        mutation_type = np.random.randint(0, 2)  # 1- change rectangles, 0- add or remove
-        if 0 == mutation_type:
-
-            # decide if to add or remove a rectangle remove-40%, add-60%
-            add_remove = np.random.randint(0, 10)
-            if 3 >= add_remove and ind.shape[0] > 2:
+        mutation_type = np.random.random()  # change rectangles or add/remove
+        if mutation_type >= prob_edit:
+            # decide if to add or remove a rectangle
+            add_remove = np.random.random()
+            if add_remove >= prob_add and ind.shape[0] > 2:
                 # remove rectangle
                 ind = np.delete(ind, np.random.randint(0, ind.shape[0]), axis=0)
                 already_changed = True
-            elif 9 >= add_remove and ind.shape[0] < max_rectangles:
+            elif ind.shape[0] < max_rectangles:
                 # add rectangle
                 new_rect = np.zeros((1, 8), int)
                 # fill rectangle
@@ -238,10 +247,9 @@ def mutation(pop: list, img_size: int, max_rectangles: int) -> list:
                 ind = np.r_[ind, new_rect]
                 already_changed = True
 
-        if 1 == mutation_type or not already_changed:  # if could not add or remove rectangle, this mutation is performed
+        if mutation_type < prob_edit or not already_changed:  # if could not add or remove rectangle, this mutation is performed
             # decide how many rectangles to change
             change_num = np.random.randint(1, ind.shape[0] + 1)
-            # change_num = np.random.randint(1, 2)
             for temp in range(change_num):
                 rect_idx = np.random.randint(0, ind.shape[0])
                 # change two traits of each chosen rectangle
@@ -250,34 +258,34 @@ def mutation(pop: list, img_size: int, max_rectangles: int) -> list:
                     if 0 == trait_idx:
                         # x1, y1
                         ind[rect_idx, 0] = np.maximum(0, np.minimum(ind[rect_idx, 2] - 1, ind[rect_idx, 0] +
-                                                                    np.random.normal(0, img_size / 20 + 1)))
+                                                                    np.random.normal(0, mut_std*img_size)))
                         # ind[rect_idx, 0] = np.random.randint(0, ind[rect_idx, 2])
                         ind[rect_idx, 1] = np.maximum(0, np.minimum(ind[rect_idx, 3] - 1, ind[rect_idx, 1] +
-                                                                    np.random.normal(0, img_size / 20 + 1)))
+                                                                    np.random.normal(0, mut_std*img_size)))
                         # ind[rect_idx, 1] = np.random.randint(0, ind[rect_idx, 3])
                     elif 1 == trait_idx:
                         # x2, y2
                         ind[rect_idx, 2] = np.maximum(ind[rect_idx, 0] + 1,
                                                       np.minimum(img_size, ind[rect_idx, 2] +
-                                                                 np.random.normal(0, img_size / 20 + 1)))
+                                                                 np.random.normal(0, mut_std*img_size)))
                         # ind[rect_idx, 2] = np.random.randint(ind[rect_idx, 0]+1, img_size)
 
                         ind[rect_idx, 3] = np.maximum(ind[rect_idx, 1] + 1,
                                                       np.minimum(img_size, ind[rect_idx, 3] +
-                                                                 np.random.normal(0, img_size / 20 + 1)))
+                                                                 np.random.normal(0, mut_std*img_size)))
                         # ind[rect_idx, 3] = np.random.randint(ind[rect_idx, 1]+1, img_size)
                     elif 2 == trait_idx:
                         # B channel
-                        ind[rect_idx, 4] = np.maximum(0, np.minimum(255, ind[rect_idx, 4] + np.random.normal(0, 100)))
+                        ind[rect_idx, 4] = np.maximum(0, np.minimum(255, ind[rect_idx, 4] + np.random.normal(0, mut_std*255)))
                     elif 3 == trait_idx:
                         # G channel
-                        ind[rect_idx, 5] = np.maximum(0, np.minimum(255, ind[rect_idx, 5] + np.random.normal(0, 100)))
+                        ind[rect_idx, 5] = np.maximum(0, np.minimum(255, ind[rect_idx, 5] + np.random.normal(0, mut_std*255)))
                     elif 4 == trait_idx:
                         # R channel
-                        ind[rect_idx, 6] = np.maximum(0, np.minimum(255, ind[rect_idx, 6] + np.random.normal(0, 100)))
+                        ind[rect_idx, 6] = np.maximum(0, np.minimum(255, ind[rect_idx, 6] + np.random.normal(0, mut_std*255)))
                     elif 5 == trait_idx:
                         # A channel
-                        ind[rect_idx, 7] = np.maximum(0, np.minimum(255, ind[rect_idx, 7] + np.random.normal(0, 100)))
+                        ind[rect_idx, 7] = np.maximum(0, np.minimum(255, ind[rect_idx, 7] + np.random.normal(0, mut_std*255)))
 
         pop_mutation[i] = ind.copy()
 
