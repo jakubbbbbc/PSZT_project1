@@ -37,8 +37,6 @@ num_kept = 5
 debug = False
 
 if __name__ == "__main__":
-    # for tests use random seed: 300418 (matr. number)
-    # np.random.seed(300418)
 
     # load input image
     input_img = cv2.imread(image_path)

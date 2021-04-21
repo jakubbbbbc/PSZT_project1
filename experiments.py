@@ -57,8 +57,7 @@ debug = False
 
 if __name__ == "__main__":
     while actual_rep < num_rep:
-        # for tests use random seed: 300418 (matr. number)
-        # np.random.seed(300418)
+
         best_scores_full = []
         best_scores_full_gen = []
         # load input image
