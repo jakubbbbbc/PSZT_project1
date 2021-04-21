@@ -15,18 +15,18 @@ from individual import create_image
 from evolution_algorithm import initialize_population, objective_function, selection_tournament, succession_elite, \
     mutation, succession_steady_state
 
-image_path = "image/sunset.jpg"
+image_path = "image/Jakub.jpeg"
 
 img_size = 100
 pop_size = 20
-num_generations = 3000
+num_generations = 30000
 
 # for mutation
 max_rectangles = 10000
 # probability that individual's rectangles are edited; probability that a rectangle is removed or added = 1-prob_edit
-prob_edit = 0.5
+prob_edit = 0.3
 # probability a rectangle is added and not removed; final_prob_add = (1-prob_edit)*prob_add
-prob_add = 0.6
+prob_add = 0.8
 # defines mutation std in relation to max value: coordinates_std=mut_std*img_size, colors_std = std*255
 mut_std = 0.4
 
@@ -34,7 +34,7 @@ mut_std = 0.4
 num_kept = 5
 
 # decide if to show additional information
-debug = True
+debug = False
 
 if __name__ == "__main__":
     # for tests use random seed: 300418 (matr. number)
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     # load input image
     input_img = cv2.imread(image_path)
-    input_img = input_img[::7, ::7]
+    input_img = input_img[::8, ::8]
     # y, x = 40, 20
     y, x = 0, 0
     input_img = input_img[y:y+img_size, x:x+img_size]

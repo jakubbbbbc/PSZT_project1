@@ -290,3 +290,6 @@ def mutation(pop: list, img_size: int, max_rectangles: int, prob_edit: float, pr
         pop_mutation[i] = ind.copy()
 
     return pop_mutation
+
+# TODO add save and read population
+
