@@ -97,7 +97,7 @@ def selection_tournament(individuals: list, scores: np.ndarray) -> list:
 
 def succession_elite(old_pop: list, old_scores: np.ndarray, new_pop: list, new_scores: np.ndarray,
                      num_kept: int = 1) -> (list, np.ndarray):
-    """ Perform elite succession, replaces num_kept worst individuals from old_pop with num_kept best
+    """ Perform elite succession, keeps num_kept best individuals from old_pop and replaces the rest with best
         individuals from new_pop
 
     :param old_pop: current population
@@ -189,7 +189,7 @@ def mutation(pop: list, img_size: int, max_rectangles: int, prob_edit: float, pr
     For each individual of k rectangles at first decide if to change existing rectangles or change their number.
     If changing existing ones: draw rectangle index and which part to change (0 - top-left corner, 1 -
     bottom-right corner, 2-5 - BGRA channels) and change the appropriate trait (for each individual two traits of many
-    rectangles are changed). If changing number of rectangles: draw a number 0-9 to decide if to add or remove one.
+    rectangles are changed). If changing number of rectangles: decide if to add or remove based on prob_add.
 
     :param pop:  population to perform mutation on
     :type pop: list of pop_size individuals
